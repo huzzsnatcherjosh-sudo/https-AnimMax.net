@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANIMAX – Infinite Anime, Zero Ads</title>
+    <style>
+        :root {
+            --bg: #121212;
+            --text: #ffffff;
+            --accent: #00BCD4;
+            --secondary: #E91E63;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            background: rgba(0, 0, 0, .35);
+            backdrop-filter: blur(10px);
+        }
+        nav h1 {
+            font-size: 1.5rem;
+            letter-spacing: 1px;
+            background: linear-gradient(45deg, var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        #search {
+            width: 220px;
+            padding: .5rem .75rem;
+            border: 1px solid rgba(255, 255, 255, .15);
+            border-radius: 99px;
+            background: rgba(255, 255, 255, .07);
+            color: var(--text);
+            transition: .25s;
+        }
+        #search:focus {
+            width: 280px;
+            border-color: var(--accent);
+            outline: none;
+        }
+        main {
+            max-width: 1300px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        }
+        .card {
+            background: rgba(255, 255, 255, .06);
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform .25s, box-shadow .25s;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px #0008;
+        }
+        .card img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+        }
+        .card p {
+            padding: .6rem .8rem;
+            font-size: .9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .center {
+            text-align: center;
+            margin: 3rem 0 1.5rem;
+            font-size: 1.2rem;
+        }
+        #player {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto 2rem;
+            aspect-ratio: 16 / 9;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #000;
+        }
+        #episodes {
+            display: flex;
+            gap: .5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        #episodes button {
+            border: 1px solid rgba(255, 255, 255, .2);
+            background: rgba(255, 255, 255, .07);
+            color: var(--text);
+            padding: .4rem .8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: .2s;
+        }
+        #episodes button:hover,
+        #episodes button.active {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        .load-more {
+            text-align: center;
+            margin: 2rem 0;
+        }
+        .load-more button {
+            padding: .6rem 1.2rem;
+            border: 1px solid var(--accent);
+            background: transparent;
+            color: var(--accent);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: .2s;
+        }
+        .load-more button:hover {
+            background: var(--accent);
+            color: var(--bg);
+        }
+        /* ---------- NAV BUTTONS ---------- */
+        .nav-links {
+            display: flex;
+            gap: 1.2rem;
+            list-style: none;
+        }
+        .nav-links button {
+            background: none;
+            border: none;
+            color: var(--text);
+            cursor: pointer;
+            font-weight: 600;
+            transition: color .2s;
+        }
+        .nav-links button:hover,
+        .nav-links button.active {
+            color: var(--accent);
+        }
+        /* ---------- PAGES ---------- */
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <h1>ANIMAX</h1>
+    <ul class="nav-links">
+        <li><button class="page-btn active" data-page="home">Home</button></li>
+        <li><button class="page-btn" data-page="library">Library</button></li>
+        <li><button class="page-btn" data-page="watch">Watch</button></li>
+        <li><button class="page-btn" data-page="profile">Profile</button></li>
+    </ul>
+</nav>
+
+<!-- ////////////////////  HOME  //////////////////// -->
+<section id="home" class="page active">
+    <h2 class="center">Discover – Infinite Anime</h2>
+    <div class="grid" id="homeGrid"></div>
+    <div class="load-more"><button onclick="loadMore()">Load more</button></div>
+</section>
+
+<!-- ////////////////////  LIBRARY  //////////////////// -->
+<section id="library" class="page">
+    <h2 class="center">Library</h2>
+    <input id="libSearch" placeholder="Search title…" style="margin-bottom:1.5rem;width:100%;max-width:400px;">
+    <div class="grid" id="libGrid"></div>
+</section>
+
+<!-- ////////////////////  WATCH  //////////////////// -->
+<section id="watch" class="page">
+    <video id="player" controls autoplay></video>
+    <div id="episodes"></div>
+</section>
+
+<!-- ////////////////////  PROFILE  //////////////////// -->
+<section id="profile" class="page">
+    <div style="display:flex;gap:1.5rem;align-items:center;background:rgba(255,255,255,.05);padding:2rem;border-radius:12px;">
+        <img src="https://i.pravatar.cc/200?u=animax" alt="avatar" style="width:100px;height:100px;border-radius:50%;border:3px solid var(--accent);">
+        <div>
+            <h2>Anime Fan</h2>
+            <p style="opacity:.7">Level 15 – Elite Watcher</p>
+            <div style="display:flex;gap:2rem;margin-top:.5rem;">
+                <div><span style="font-size:1.4rem;font-weight:700;color:var(--secondary);">127</span><span style="font-size:.8rem;opacity:.7;">watched</span></div>
+                <div><span style="font-size:1.4rem;font-weight:700;color:var(--secondary);">3 456</span><span style="font-size:.8rem;opacity:.7;">episodes</span></div>
+                <div><span style="font-size:1.4rem;font-weight:700;color:var(--secondary);">89</span><span style="font-size:.8rem;opacity:.7;">days</span></div>
+                <div><span style="font-size:1.4rem;font-weight:700;color:var(--secondary);">4.7</span><span style="font-size:.8rem;opacity:.7;">avg rating</span></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+/* =========================================================
+   INFINITE REAL ANIME + REAL EPISODES  (zero ads)
+   ========================================================= */
+const PROXY   = "https://corsproxy.io/?";
+const LIST_URL= PROXY + encodeURIComponent("https://api.crunchyroll.com/content/v2/cms/browse?locale=en-US&n=30&start=");
+let offset    = 0;
+
+/* --------- routing --------- */
+document.querySelectorAll('.page-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchPage(btn.dataset.page));
+});
+function switchPage(name){
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(name).classList.add('active');
+    document.querySelectorAll('.page-btn').forEach(b => b.classList.toggle('active', b.dataset.page === name));
+}
+
+/* --------- utils --------- */
+const $ = s => document.querySelector(s);
+function card(a){
+    return `<div class="card" onclick="showAnime('${a.id}','${a.title.replace(/'/g,"\\'")}')">
+                <img src="${a.poster}" alt="${a.title}"><p>${a.title}</p>
+            </div>`;
+}
+
+/* --------- infinite catalogue --------- */
+async function fetchBatch(start){
+    const res = await fetch(LIST_URL + start).then(r => r.json());
+    return (res.data || []).map(it => ({
+        id: it.id,
+        title: it.title,
+        poster: it.images.poster_tall?.[0]?.[0]?.source || "https://source.unsplash.com/random/300x440?anime"
+    }));
+}
+async function renderHome(){
+    const items = await fetchBatch(offset);
+    homeGrid.insertAdjacentHTML('beforeend', items.map(card).join(''));
+    offset += items.length;
+}
+renderHome();                       // initial paint
+function loadMore(){ renderHome(); } // button
+
+/* --------- search (client) --------- */
+search.addEventListener('input', e => {
+    const q = e.target.value.trim().toLowerCase();
+    [...homeGrid.children].forEach(c =>
+        c.style.display = c.textContent.toLowerCase().includes(q) ? "" : "none"
+    );
+});
+libSearch.addEventListener('input', e => {
+    const q = e.target.value.trim().toLowerCase();
+    [...libGrid.children].forEach(c =>
+        c.style.display = c.textContent.toLowerCase().includes(q) ? "" : "none"
+    );
+});
+
+/* --------- anime detail + episodes --------- */
+async function showAnime(id, title){
+    switchPage('watch');
+    player.scrollIntoView({behavior:'smooth'});
+    // 1. seasons
+    const sRes = await fetch(PROXY + encodeURIComponent(`https://api.crunchyroll.com/content/v2/cms/seasons?series_id=${id}&locale=en-US`)).then(r => r.json());
+    const seasonId = sRes.data?.[0]?.id;
+    if (!seasonId) return alert("No season found.");
+    // 2. episodes
+    const eRes = await fetch(PROXY + encodeURIComponent(`https://api.crunchyroll.com/content/v2/cms/videos?season_id=${seasonId}&locale=en-US`)).then(r => r.json());
+    const episodes = (eRes.data || []).filter(v => v.type === 'episode').sort((a,b)=>a.episode_number-b.episode_number);
+    if (!episodes.length) return alert("No episodes found.");
+    // 3. episode buttons
+    episodesDiv.innerHTML = episodes.map((ep,i) =>
+        `<button onclick="watchEp('${ep.streams.adaptive_hls?.["":""]?.url}', ${i})">Ep ${ep.episode_number}</button>`
+    ).join('');
+    // 4. auto-play first
+    watchEp(episodes[0].streams.adaptive_hls?.["":""]?.url, 0);
+}
+function watchEp(m3u8, idx){
+    if (!m3u8) return alert("Stream unavailable.");
+    player.src = m3u8;
+    player.play();
+    document.querySelectorAll('#episodes button').forEach((b,i)=>b.classList.toggle('active', i===idx));
+}
+
+/* --------- library mirror (same data) --------- */
+renderHome(); // re-use for library
+</script>
+</body>
+</html>
