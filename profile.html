@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANIMAX – Profile</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #121212;
+            --text: #ffffff;
+            --accent: #00BCD4;
+            --secondary: #E91E63;
+            --glow-blue: rgba(0, 188, 212, 0.7);
+            --glow-pink: rgba(233, 30, 99, 0.6);
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 2rem;
+        }
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        header h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 2rem;
+            background: linear-gradient(45deg, var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .profile-card {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            background: rgba(255, 255, 255, .05);
+            padding: 2rem;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, .1);
+            margin-bottom: 2rem;
+        }
+        .profile-card img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid var(--accent);
+            box-shadow: 0 0 20px var(--glow-blue);
+        }
+        .stat-line {
+            display: flex;
+            gap: 2rem;
+            margin-top: .5rem;
+        }
+        .stat-line div {
+            text-align: center;
+        }
+        .stat-line div span:first-child {
+            display: block;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--secondary);
+            text-shadow: 0 0 8px var(--glow-pink);
+        }
+        .stat-line div span:last-child {
+            font-size: .8rem;
+            opacity: .7;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        .action-buttons button {
+            padding: .6rem 1.2rem;
+            border: 1px solid var(--accent);
+            background: transparent;
+            color: var(--accent);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: .2s;
+        }
+        .action-buttons button:hover {
+            background: var(--accent);
+            color: var(--bg);
+            box-shadow: 0 0 20px var(--glow-blue);
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>ANIMAX – Profile</h1>
+    <a href="index.html" style="color:var(--accent);text-decoration:none;">← Back to site</a>
+</header>
+
+<div class="profile-card">
+    <img src="https://i.pravatar.cc/200?u=animax" alt="avatar">
+    <div>
+        <h2>Anime Fan</h2>
+        <p style="opacity:.7">Level 15 – Elite Watcher</p>
+        <div class="stat-line">
+            <div><span id="watchedCount">0</span><span>watched</span></div>
+            <div><span id="episodeCount">0</span><span>episodes</span></div>
+            <div><span id="dayCount">0</span><span>days</span></div>
+            <div><span id="ratingCount">0</span><span>reviews</span></div>
+        </div>
+    </div>
+</div>
+
+<div class="action-buttons">
+    <button onclick="addFakeWatch()">Add Fake Watch</button>
+    <button onclick="resetStats()">Reset Stats</button>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+let watched = 0, episodes = 0, days = 0, reviews = 0;
+
+function animateNumber(id, end){
+    const el = $('#' + id);
+    const start = parseInt(el.textContent) || 0;
+    anime({
+        targets: el,
+        innerHTML: [start, end],
+        duration: 800,
+        easing: 'easeOutQuart',
+        round: 1
+    });
+}
+function addFakeWatch(){
+    watched += 1;
+    episodes += 12;
+    days += 0.5;
+    reviews += 1;
+    animateNumber('watchedCount', watched);
+    animateNumber('episodeCount', episodes);
+    animateNumber('dayCount', Math.floor(days));
+    animateNumber('ratingCount', reviews);
+}
+function resetStats(){
+    watched = 0;
+    episodes = 0;
+    days = 0;
+    reviews = 0;
+    animateNumber('watchedCount', 0);
+    animateNumber('episodeCount', 0);
+    animateNumber('dayCount', 0);
+    animateNumber('ratingCount', 0);
+}
+// initial fake numbers
+addFakeWatch();
+</script>
+
+</body>
+</html>
