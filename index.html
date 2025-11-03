@@ -3,13 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ANIMAX – Infinite Anime, Zero Ads</title>
+    <title>ANIMAX – Infinite Anime Universe</title>
+
+    <!-- =====  EXTERNAL LIBS  ===== -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
+
+    <!-- =====  ICON FONT  ===== -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- =====  THEME ENGINE  ===== -->
+    <style id="themeVars"></style>
+
+    <!-- =====  BASE + ANIMATIONS  ===== -->
     <style>
         :root {
             --bg: #121212;
             --text: #ffffff;
             --accent: #00BCD4;
             --secondary: #E91E63;
+            --glow-purple: rgba(45, 27, 105, 0.8);
+            --glow-pink: rgba(233, 30, 99, 0.6);
+            --glow-blue: rgba(0, 188, 212, 0.7);
         }
         * {
             box-sizing: border-box;
@@ -17,67 +32,136 @@
             padding: 0;
         }
         body {
-            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            font-family: 'Inter', sans-serif;
             background: var(--bg);
             color: var(--text);
+            overflow-x: hidden;
         }
+        /* ----- PARTICLE BG ----- */
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        /* ----- NAV GLASS + GLOW ----- */
         nav {
             position: sticky;
             top: 0;
-            z-index: 10;
+            z-index: 100;
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 1rem 1.5rem;
-            background: rgba(0, 0, 0, .35);
-            backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, .25);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, .1);
         }
         nav h1 {
-            font-size: 1.5rem;
-            letter-spacing: 1px;
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            font-weight: 900;
             background: linear-gradient(45deg, var(--secondary), var(--accent));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 8px var(--glow-pink));
+            animation: pulse 2s infinite;
         }
+        @keyframes pulse {
+            50% { filter: drop-shadow(0 0 12px var(--glow-pink)); }
+        }
+        .nav-links {
+            display: flex;
+            gap: 1.2rem;
+            list-style: none;
+        }
+        .nav-links button {
+            position: relative;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-weight: 600;
+            cursor: pointer;
+            transition: color .3s;
+        }
+        .nav-links button::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width .3s;
+        }
+        .nav-links button:hover,
+        .nav-links button.active {
+            color: var(--accent);
+        }
+        .nav-links button.active::after {
+            width: 100%;
+        }
+        /* ----- SEARCH BAR ----- */
         #search {
             width: 220px;
             padding: .5rem .75rem;
-            border: 1px solid rgba(255, 255, 255, .15);
+            border: 1px solid rgba(255, 255, 255, .2);
             border-radius: 99px;
             background: rgba(255, 255, 255, .07);
             color: var(--text);
-            transition: .25s;
+            transition: .3s;
         }
         #search:focus {
             width: 280px;
             border-color: var(--accent);
+            box-shadow: 0 0 15px var(--glow-blue);
             outline: none;
         }
-        main {
+        /* ----- PAGES ----- */
+        .page {
+            display: none;
             max-width: 1300px;
             margin: 2rem auto;
             padding: 0 1rem;
+            animation: fadeIn .6s ease;
         }
+        .page.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* ----- GRID CARD 3D HOVER ----- */
         .grid {
             display: grid;
             gap: 1.5rem;
             grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            perspective: 1000px;
         }
         .card {
             background: rgba(255, 255, 255, .06);
-            border-radius: 8px;
+            border-radius: 12px;
             overflow: hidden;
             cursor: pointer;
-            transition: transform .25s, box-shadow .25s;
+            transition: transform .4s, box-shadow .4s;
+            transform-style: preserve-3d;
         }
         .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 25px #0008;
+            transform: rotateY(var(--rotateY)) rotateX(var(--rotateX)) translateZ(20px);
+            box-shadow: 0 20px 40px #0008, 0 0 30px var(--glow-purple);
         }
         .card img {
             width: 100%;
             height: 220px;
             object-fit: cover;
+            transition: transform .4s;
+        }
+        .card:hover img {
+            transform: scale(1.05);
         }
         .card p {
             padding: .6rem .8rem;
@@ -86,11 +170,7 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .center {
-            text-align: center;
-            margin: 3rem 0 1.5rem;
-            font-size: 1.2rem;
-        }
+        /* ----- PLAYER ----- */
         #player {
             width: 100%;
             max-width: 900px;
@@ -99,13 +179,17 @@
             border-radius: 12px;
             overflow: hidden;
             background: #000;
+            box-shadow: 0 0 40px var(--glow-purple);
         }
+        /* ----- EPISODES BAR ----- */
         #episodes {
             display: flex;
             gap: .5rem;
             flex-wrap: wrap;
             justify-content: center;
             margin-bottom: 2rem;
+            max-height: 200px;
+            overflow-y: auto;
         }
         #episodes button {
             border: 1px solid rgba(255, 255, 255, .2);
@@ -120,7 +204,9 @@
         #episodes button.active {
             background: var(--accent);
             border-color: var(--accent);
+            box-shadow: 0 0 10px var(--glow-blue);
         }
+        /* ----- LOAD MORE ----- */
         .load-more {
             text-align: center;
             margin: 2rem 0;
@@ -137,36 +223,67 @@
         .load-more button:hover {
             background: var(--accent);
             color: var(--bg);
+            box-shadow: 0 0 20px var(--glow-blue);
         }
-        /* ---------- NAV BUTTONS ---------- */
-        .nav-links {
+        /* ----- PROFILE CARD ----- */
+        .profile-card {
             display: flex;
-            gap: 1.2rem;
-            list-style: none;
+            gap: 1.5rem;
+            align-items: center;
+            background: rgba(255, 255, 255, .05);
+            padding: 2rem;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, .1);
+            margin-bottom: 2rem;
         }
-        .nav-links button {
-            background: none;
-            border: none;
-            color: var(--text);
-            cursor: pointer;
-            font-weight: 600;
-            transition: color .2s;
+        .profile-card img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid var(--accent);
+            box-shadow: 0 0 20px var(--glow-blue);
         }
-        .nav-links button:hover,
-        .nav-links button.active {
-            color: var(--accent);
+        .stat-line {
+            display: flex;
+            gap: 2rem;
+            margin-top: .5rem;
         }
-        /* ---------- PAGES ---------- */
-        .page {
-            display: none;
+        .stat-line div {
+            text-align: center;
         }
-        .page.active {
+        .stat-line div span:first-child {
             display: block;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--secondary);
+            text-shadow: 0 0 8px var(--glow-pink);
+        }
+        .stat-line div span:last-child {
+            font-size: .8rem;
+            opacity: .7;
+        }
+        /* ----- THEME SWITCHER (tiny) ----- */
+        .theme-switch {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, .1);
+            border: 1px solid rgba(255, 255, 255, .2);
+            border-radius: 8px;
+            padding: .4rem .6rem;
+            font-size: .8rem;
+            cursor: pointer;
+            z-index: 200;
         }
     </style>
 </head>
 <body>
 
+<!-- Particle Background -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- =====  NAV  ===== -->
 <nav>
     <h1>ANIMAX</h1>
     <ul class="nav-links">
@@ -175,72 +292,103 @@
         <li><button class="page-btn" data-page="watch">Watch</button></li>
         <li><button class="page-btn" data-page="profile">Profile</button></li>
     </ul>
+    <input id="search" placeholder="Search anime…" autocomplete="off">
 </nav>
 
-<!-- ////////////////////  HOME  //////////////////// -->
-<section id="home" class="page active">
-    <h2 class="center">Discover – Infinite Anime</h2>
-    <div class="grid" id="homeGrid"></div>
-    <div class="load-more"><button onclick="loadMore()">Load more</button></div>
-</section>
+<!-- =====  PAGES  ===== -->
+<main>
+    <!--  HOME  -->
+    <section id="home" class="page active">
+        <h2 class="center">Discover – Infinite Anime</h2>
+        <div class="grid" id="homeGrid"></div>
+        <div class="load-more"><button onclick="loadMore()">Load more</button></div>
+    </section>
 
-<!-- ////////////////////  LIBRARY  //////////////////// -->
-<section id="library" class="page">
-    <h2 class="center">Library</h2>
-    <input id="libSearch" placeholder="Search title…" style="margin-bottom:1.5rem;width:100%;max-width:400px;">
-    <div class="grid" id="libGrid"></div>
-</section>
+    <!--  LIBRARY  -->
+    <section id="library" class="page">
+        <h2 class="center">Library</h2>
+        <input id="libSearch" placeholder="Search title…" style="margin-bottom:1.5rem;width:100%;max-width:400px;">
+        <div class="grid" id="libGrid"></div>
+    </section>
 
-<!-- ////////////////////  WATCH  //////////////////// -->
-<section id="watch" class="page">
-    <video id="player" controls autoplay></video>
-    <div id="episodes"></div>
-</section>
+    <!--  WATCH  -->
+    <section id="watch" class="page">
+        <video id="player" controls autoplay></video>
+        <div id="episodes"></div>
+    </section>
 
-<!-- ////////////////////  PROFILE  //////////////////// -->
-<section id="profile" class="page">
-    <div style="display:flex;gap:1.5rem;align-items:center;background:rgba(255,255,255,.05);padding:2rem;border-radius:12px;">
-        <img src="https://i.pravatar.cc/200?u=animax" alt="avatar" style="width:100px;height:100px;border-radius:50%;border:3px solid var(--accent);">
-        <div>
-            <h2>Anime Fan</h2>
-            <p style="opacity:.7">Level 15 – Elite Watcher</p>
-            <div style="display:flex;gap:2rem;margin-top:.5rem;">
-                <div><span style="font-size:1.4rem;font-weight:700;color:var(--secondary);">127</span><span style="font-size:.8rem;opacity:.7;">watched</span></div>
-                <div><span style="font-size:1.4rem;font-weight:700;color:var(--secondary);">3 456</span><span style="font-size:.8rem;opacity:.7;">episodes</span></div>
-                <div><span style="font-size:1.4rem;font-weight:700;color:var(--secondary);">89</span><span style="font-size:.8rem;opacity:.7;">days</span></div>
-                <div><span style="font-size:1.4rem;font-weight:700;color:var(--secondary);">4.7</span><span style="font-size:.8rem;opacity:.7;">avg rating</span></div>
+    <!--  PROFILE  -->
+    <section id="profile" class="page">
+        <div class="profile-card">
+            <img src="https://i.pravatar.cc/200?u=animax" alt="avatar">
+            <div>
+                <h2>Anime Fan</h2>
+                <p style="opacity:.7">Level 15 – Elite Watcher</p>
+                <div class="stat-line">
+                    <div><span>127</span><span>watched</span></div>
+                    <div><span>3 456</span><span>episodes</span></div>
+                    <div><span>89</span><span>days</span></div>
+                    <div><span>4.7</span><span>avg rating</span></div>
+                </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
+</main>
 
+<!-- Theme Switcher -->
+<button class="theme-switch" onclick="cycleTheme()">🎨</button>
+
+<!-- =====  JS  ===== -->
 <script>
 /* =========================================================
-   INFINITE REAL ANIME + REAL EPISODES  (zero ads)
+   1.  PARTICLE  BG  (PIXI)
+   2.  INFINITE REAL ANIME + EPISODES
+   3.  3D HOVER  CARDS
+   4.  THEME  ENGINE
    ========================================================= */
-const PROXY   = "https://corsproxy.io/?";
-const LIST_URL= PROXY + encodeURIComponent("https://api.crunchyroll.com/content/v2/cms/browse?locale=en-US&n=30&start=");
-let offset    = 0;
 
-/* --------- routing --------- */
-document.querySelectorAll('.page-btn').forEach(btn => {
-    btn.addEventListener('click', () => switchPage(btn.dataset.page));
+/* --------- 1. PARTICLE BG --------- */
+const app = new PIXI.Application({
+    width: window.innerWidth,
+    height: window.innerHeight,
+    backgroundColor: 0x121212,
+    resizeTo: window
 });
-function switchPage(name){
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById(name).classList.add('active');
-    document.querySelectorAll('.page-btn').forEach(b => b.classList.toggle('active', b.dataset.page === name));
+$('#particles-canvas').appendChild(app.view);
+const particleCount = 60;
+for (let i = 0; i < particleCount; i++) {
+    const p = new PIXI.Graphics();
+    p.beginFill(Math.random() > .5 ? 0xE91E63 : 0x00BCD4);
+    p.drawCircle(0, 0, Math.random() * 3 + 1);
+    p.endFill();
+    p.x = Math.random() * app.screen.width;
+    p.y = Math.random() * app.screen.height;
+    p.vx = (Math.random() - .5) * .8;
+    p.vy = (Math.random() - .5) * .8;
+    app.stage.addChild(p);
 }
+app.ticker.add(() => {
+    app.stage.children.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0) p.x = app.screen.width;
+        if (p.x > app.screen.width) p.x = 0;
+        if (p.y < 0) p.y = app.screen.height;
+        if (p.y > app.screen.height) p.y = 0;
+    });
+});
 
-/* --------- utils --------- */
+/* --------- 2. INFINITE ANIME + EPISODES --------- */
+const PROXY = "https://corsproxy.io/?";
+const LIST_URL = PROXY + encodeURIComponent("https://api.crunchyroll.com/content/v2/cms/browse?locale=en-US&n=30&start=");
+let offset = 0;
+
 const $ = s => document.querySelector(s);
 function card(a){
     return `<div class="card" onclick="showAnime('${a.id}','${a.title.replace(/'/g,"\\'")}')">
-                <img src="${a.poster}" alt="${a.title}"><p>${a.title}</p>
+                <img src="${a.poster}" alt=""><p>${a.title}</p>
             </div>`;
 }
-
-/* --------- infinite catalogue --------- */
 async function fetchBatch(start){
     const res = await fetch(LIST_URL + start).then(r => r.json());
     return (res.data || []).map(it => ({
@@ -253,11 +401,28 @@ async function renderHome(){
     const items = await fetchBatch(offset);
     homeGrid.insertAdjacentHTML('beforeend', items.map(card).join(''));
     offset += items.length;
+    animateCards();
 }
-renderHome();                       // initial paint
-function loadMore(){ renderHome(); } // button
+renderHome(); // initial
+function loadMore(){ renderHome(); }
 
-/* --------- search (client) --------- */
+/* --------- 3. 3D HOVER CARDS --------- */
+document.addEventListener('mousemove', e => {
+    document.querySelectorAll('.card').forEach(card => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+        const rotateX = -y / 20;
+        const rotateY = x / 20;
+        card.style.setProperty('--rotateX', `${rotateX}deg`);
+        card.style.setProperty('--rotateY', `${rotateY}deg`);
+    });
+});
+function animateCards(){
+    anime({targets:'.card',translateY:[60,0],opacity:[0,1],delay:anime.stagger(80),easing:'easeOutQuart'});
+}
+
+/* --------- 4. SEARCH --------- */
 search.addEventListener('input', e => {
     const q = e.target.value.trim().toLowerCase();
     [...homeGrid.children].forEach(c =>
@@ -271,23 +436,23 @@ libSearch.addEventListener('input', e => {
     );
 });
 
-/* --------- anime detail + episodes --------- */
+/* --------- 5. ANIME DETAIL + EPISODES --------- */
 async function showAnime(id, title){
     switchPage('watch');
     player.scrollIntoView({behavior:'smooth'});
-    // 1. seasons
+    // seasons
     const sRes = await fetch(PROXY + encodeURIComponent(`https://api.crunchyroll.com/content/v2/cms/seasons?series_id=${id}&locale=en-US`)).then(r => r.json());
     const seasonId = sRes.data?.[0]?.id;
     if (!seasonId) return alert("No season found.");
-    // 2. episodes
+    // episodes
     const eRes = await fetch(PROXY + encodeURIComponent(`https://api.crunchyroll.com/content/v2/cms/videos?season_id=${seasonId}&locale=en-US`)).then(r => r.json());
     const episodes = (eRes.data || []).filter(v => v.type === 'episode').sort((a,b)=>a.episode_number-b.episode_number);
     if (!episodes.length) return alert("No episodes found.");
-    // 3. episode buttons
-    episodesDiv.innerHTML = episodes.map((ep,i) =>
+    // episode buttons
+    episodesDiv.innerHTML = `<div class="center">${title} – Episodes</div>` + episodes.map((ep,i) =>
         `<button onclick="watchEp('${ep.streams.adaptive_hls?.["":""]?.url}', ${i})">Ep ${ep.episode_number}</button>`
     ).join('');
-    // 4. auto-play first
+    // auto-play first
     watchEp(episodes[0].streams.adaptive_hls?.["":""]?.url, 0);
 }
 function watchEp(m3u8, idx){
@@ -297,8 +462,37 @@ function watchEp(m3u8, idx){
     document.querySelectorAll('#episodes button').forEach((b,i)=>b.classList.toggle('active', i===idx));
 }
 
-/* --------- library mirror (same data) --------- */
-renderHome(); // re-use for library
+/* --------- 6. THEME ENGINE --------- */
+const themes = [
+    {bg:'#121212',text:'#ffffff',accent:'#00BCD4',secondary:'#E91E63'},
+    {bg:'#1a1a2e',text:'#eee',accent:'#f39c12',secondary:'#e74c3c'},
+    {bg:'#0f3460',text:'#fff',accent:'#ff6b6b',secondary:'#4ecdc4'}
+];
+let tIdx = 0;
+function cycleTheme(){
+    tIdx = (tIdx + 1) % themes.length;
+    const t = themes[tIdx];
+    document.documentElement.style.setProperty('--bg', t.bg);
+    document.documentElement.style.setProperty('--text', t.text);
+    document.documentElement.style.setProperty('--accent', t.accent);
+    document.documentElement.style.setProperty('--secondary', t.secondary);
+    app.renderer.backgroundColor = parseInt(t.bg.replace('#','0x'));
+}
+document.documentElement.style.setProperty('--bg', themes[0].bg);
+document.documentElement.style.setProperty('--text', themes[0].text);
+document.documentElement.style.setProperty('--accent', themes[0].accent);
+document.documentElement.style.setProperty('--secondary', themes[0].secondary);
+
+/* --------- 7. ROUTING --------- */
+document.querySelectorAll('.page-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchPage(btn.dataset.page));
+});
+function switchPage(name){
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(name).classList.add('active');
+    document.querySelectorAll('.page-btn').forEach(b => b.classList.toggle('active', b.dataset.page === name));
+    anime({targets:'#particles-canvas',alpha:[.2,1],duration:600,easing:'easeOutQuad'});
+}
 </script>
 </body>
 </html>
